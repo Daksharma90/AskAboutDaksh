@@ -1,0 +1,255 @@
+import streamlit as st
+import io
+from groq import Groq
+from gtts import gTTS
+from streamlit_mic_recorder import mic_recorder
+import base64
+import os
+
+# --- Configuration ---
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"] # Access API key securely from Streamlit Secrets
+GROQ_TEXT_MODEL = "llama-3.3-70b-versatile" # Model for text generation
+GROQ_STT_MODEL = "whisper-large-v3" # Model for speech-to-text (Whisper)
+
+# Placeholder for your actual photo URL. IMPORTANT: Replace this!
+DAKSH_PHOTO_URL = "https://placehold.co/150x150/CCE5FF/000000?text=Daksh" 
+
+# --- Functions for AI Interactions ---
+
+@st.cache_data
+def load_persona_data(filepath="my_persona.md"):
+    """Loads the persona data from the my_persona.md file."""
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        st.error(f"Error: '{filepath}' not found. Please ensure your persona file is in the same directory.")
+        return None
+
+def transcribe_audio(audio_bytes: bytes, groq_client: Groq) -> str:
+    """
+    Transcribes audio bytes into text using Groq's Whisper API.
+    Args:
+        audio_bytes (bytes): Raw audio data in WAV format.
+        groq_client (Groq): Initialized Groq client.
+    Returns:
+        str: Transcribed text.
+    """
+    try:
+        st.spinner("Transcribing audio...")
+        with io.BytesIO(audio_bytes) as audio_file:
+            audio_file.name = "audio.wav" # Groq API expects a file-like object with a name
+            transcript = groq_client.audio.transcriptions.create(
+                file=(audio_file.name, audio_file.getvalue(), "audio/wav"),
+                model=GROQ_STT_MODEL,
+                response_format="text"
+            )
+            return transcript.strip()
+    except Exception as e:
+        st.error(f"Error transcribing audio: {e}")
+        return ""
+
+def generate_ai_response(user_text: str, persona_data: str, groq_client: Groq) -> str:
+    """
+    Generates a text response from Groq's Llama 3, acting as Daksh Sharma.
+    Args:
+        user_text (str): The user's question.
+        persona_data (str): The full persona data from my_persona.md.
+        groq_client (Groq): Initialized Groq client.
+    Returns:
+        str: AI-generated response.
+    """
+    try:
+        # Construct the system prompt using the loaded persona data
+        system_prompt = f"""
+        You are an AI assistant designed to respond as Daksh Sharma would. Your goal is to accurately reflect Daksh's personality, experiences, and thought processes when answering questions.
+        You have access to detailed information about Daksh Sharma below. Use this information to formulate your responses.
+        If a direct answer to the user's question is not explicitly found in the provided information, infer a logical and realistic response that aligns with Daksh Sharma's overall persona, skills, interests, and professional philosophy.
+        Avoid fabricating specific projects, dates, or detailed anecdotes not present in the provided persona data.
+        Maintain an authentic, personal, and concise tone, typically 2-4 sentences, unless more detail is specifically requested.
+
+        --- Daksh Sharma's Persona Data ---
+        {persona_data}
+        ----------------------------------
+        """
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_text}
+        ]
+
+        chat_completion = groq_client.chat.completions.create(
+            messages=messages,
+            model=GROQ_TEXT_MODEL,
+            temperature=0.7, # Adjust for creativity vs. consistency
+            max_tokens=250 # Limit response length for conciseness
+        )
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        st.error(f"Error generating AI response: {e}")
+        return "I apologize, but I encountered an issue while generating my response."
+
+def text_to_speech(text: str) -> bytes:
+    """
+    Converts text into speech audio bytes using gTTS.
+    Args:
+        text (str): The text to convert.
+    Returns:
+        bytes: Audio data in MP3 format.
+    """
+    try:
+        tts = gTTS(text=text, lang='en', slow=False)
+        audio_fp = io.BytesIO()
+        tts.write_to_fp(audio_fp)
+        audio_fp.seek(0)
+        return audio_fp.read()
+    except Exception as e:
+        st.error(f"Error converting text to speech: {e}")
+        return b""
+
+# --- Streamlit UI ---
+st.set_page_config(
+    page_title="Daksh's Voice Persona",
+    page_icon="🎙️",
+    layout="centered",
+    initial_sidebar_state="expanded"
+)
+
+# Custom CSS for a beautiful UI
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    html, body, [class*="st-"] {
+        font-family: 'Inter', sans-serif;
+    }
+    .stApp {
+        background-color: #f0f2f6; /* Light gray background */
+        color: #333333;
+    }
+    .st-emotion-cache-1cypj85 { /* Main column padding */
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    .st-emotion-cache-1r6y4y9 { /* Header styling */
+        color: #1a237e; /* Dark blue */
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .st-emotion-cache-16txt4s { /* Markdown text */
+        text-align: center;
+        color: #555555;
+    }
+    .stButton>button {
+        background-color: #4CAF50; /* Green */
+        color: white;
+        border-radius: 12px; /* More rounded corners */
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: 600;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #45a049; /* Darker green on hover */
+        transform: translateY(-2px); /* Slight lift effect */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+    .stAudio {
+        border-radius: 12px;
+        background-color: #e0e0e0; /* Light gray for audio player */
+        padding: 10px;
+    }
+    .stImage {
+        border-radius: 50%; /* Circular image */
+        border: 4px solid #1a237e; /* Border around image */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .stSpinner > div > div { /* Spinner color */
+        color: #1a237e;
+    }
+    div.st-emotion-cache-1r4qj8m { /* text input */
+        border-radius: 12px;
+        border: 1px solid #cccccc;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    div.st-emotion-cache-nahz7x { /* Text Area */
+        border-radius: 12px;
+        border: 1px solid #cccccc;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Initialize Groq client
+try:
+    groq_client = Groq(api_key=GROQ_API_KEY)
+except Exception as e:
+    st.error(f"Failed to initialize Groq client. Please check your GROQ_API_KEY in Streamlit Secrets. Error: {e}")
+    st.stop() # Stop the app if API key is not set
+
+# Load persona data
+persona_data = load_persona_data()
+if persona_data is None:
+    st.stop() # Stop if persona data couldn't be loaded
+
+st.markdown("<h1 class='st-emotion-cache-1r6y4y9'>👋 Meet Daksh's AI Persona!</h1>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image(DAKSH_PHOTO_URL, width=150, use_column_width=False)
+st.markdown("<p class='st-emotion-cache-16txt4s'>Ask me anything about Daksh's life, career, or aspirations. I'll respond as he would!</p>", unsafe_allow_html=True)
+st.markdown("---")
+
+st.markdown("<h3>🎙️ Speak Your Question</h3>", unsafe_allow_html=True)
+
+# Microphone recorder
+audio_bytes = mic_recorder(
+    start_prompt="Click to Speak",
+    stop_prompt="Stop Speaking",
+    key='mic_recorder',
+    format="wav"
+)
+
+user_text = ""
+ai_response = ""
+
+if audio_bytes:
+    with st.spinner("Transcribing your voice..."):
+        user_text = transcribe_audio(audio_bytes, groq_client)
+    if user_text:
+        st.markdown(f"<p><b>You said:</b> {user_text}</p>", unsafe_allow_html=True)
+        st.session_state['last_user_text'] = user_text # Store for potential manual trigger
+
+        with st.spinner("Generating Daksh's response..."):
+            ai_response = generate_ai_response(user_text, persona_data, groq_client)
+        if ai_response:
+            st.markdown(f"<p><b>Daksh says:</b> {ai_response}</p>", unsafe_allow_html=True)
+            with st.spinner("Converting response to speech..."):
+                audio_output = text_to_speech(ai_response)
+            if audio_output:
+                st.audio(audio_output, format='audio/mp3', start_time=0)
+    else:
+        st.warning("Could not transcribe your audio. Please try again.")
+
+st.markdown("---")
+st.markdown("<h3>⌨️ Or Type Your Question</h3>", unsafe_allow_html=True)
+
+manual_input = st.text_input("Type your question here:", key="manual_text_input")
+
+if st.button("Get Response (Text Only)"):
+    if manual_input:
+        with st.spinner("Generating Daksh's response..."):
+            ai_response = generate_ai_response(manual_input, persona_data, groq_client)
+        if ai_response:
+            st.markdown(f"<p><b>Daksh says:</b> {ai_response}</p>", unsafe_allow_html=True)
+    else:
+        st.warning("Please type a question to get a text response.")
+
+st.markdown("---")
+st.markdown("<p style='text-align: center; font-size: 0.8em; color: #777;'>Powered by Groq Llama 3, Groq Whisper, and gTTS.</p>", unsafe_allow_html=True)
+
