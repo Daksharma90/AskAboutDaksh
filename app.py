@@ -14,7 +14,7 @@ GROQ_STT_MODEL = "whisper-large-v3" # Model for speech-to-text (Whisper)
 
 # Placeholder for your actual photo URL. IMPORTANT: Replace this!
 # Using a placeholder image that aligns with the color scheme.
-DAKSH_PHOTO_URL = "https://placehold.co/150x150/1a237e/ffffff?text=Daksh" 
+DAKSH_PHOTO_URL = "https://placehold.co/150x150/ffffff/1a237e?text=Daksh" # Placeholder with white background, dark blue text
 
 # --- Functions for AI Interactions ---
 
@@ -117,7 +117,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for a beautiful UI - REVISED COLORS AND STYLES
+# Custom CSS for a beautiful UI - REVISED FOR DARK MODE
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -126,34 +126,34 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     .stApp {
-        background-color: #f0f2f6; /* Light gray background */
-        color: #333333;
+        background-color: #1a1a1a; /* Dark gray/black background */
+        color: #f0f2f6; /* Light gray for text */
     }
     .st-emotion-cache-1cypj85 { /* Main column padding */
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
     .st-emotion-cache-1r6y4y9 { /* Header styling */
-        color: #1a237e; /* Dark blue, matching image border */
+        color: #e0e0e0; /* Lighter gray for header */
         font-weight: 700;
         text-align: center;
         margin-bottom: 2rem;
     }
     .st-emotion-cache-16txt4s { /* Markdown text - Tagline */
         text-align: center;
-        color: #555555;
+        color: #cccccc; /* Slightly darker white for tagline */
     }
     /* Specific styling for the mic recorder button */
     div.st-emotion-cache-1j43z82 > div > button,
     div.st-emotion-cache-z5in9u > button, /* Target mic recorder button */
     .stButton > button { /* General button style */
-        background-color: #1a237e; /* Dark blue primary color */
+        background-color: #4CAF50; /* Green primary color for buttons */
         color: white;
         border-radius: 12px;
         padding: 10px 20px;
         font-size: 16px;
         font-weight: 600;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Darker shadow for dark mode */
         transition: all 0.3s ease;
         border: none;
         width: 100%; /* Make buttons full width for consistency */
@@ -162,40 +162,46 @@ st.markdown("""
     div.st-emotion-cache-1j43z82 > div > button:hover,
     div.st-emotion-cache-z5in9u > button:hover,
     .stButton > button:hover {
-        background-color: #2c387e; /* Slightly lighter blue on hover */
+        background-color: #45a049; /* Darker green on hover */
         transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Darker shadow on hover */
     }
     .stAudio {
         border-radius: 12px;
-        background-color: #e0e0e0;
+        background-color: #333333; /* Darker background for audio player */
         padding: 10px;
         margin-top: 10px; /* Space after response text */
     }
     .stImage {
         border-radius: 50%; /* Circular image */
-        border: 4px solid #1a237e; /* Dark blue border around image */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: 4px solid #4CAF50; /* Green border around image (contrasting with dark) */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Darker shadow */
     }
     .stSpinner > div > div { /* Spinner color */
-        color: #1a237e;
+        color: #4CAF50; /* Green spinner */
     }
     div.st-emotion-cache-1r4qj8m { /* text input outer div */
         border-radius: 12px;
-        border: 1px solid #cccccc;
+        border: 1px solid #555555; /* Lighter border for dark mode */
         padding: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         margin-top: 10px;
+        background-color: #333333; /* Dark background for input field */
     }
     div.st-emotion-cache-nahz7x { /* Text Area */
         border-radius: 12px;
-        border: 1px solid #cccccc;
+        border: 1px solid #555555; /* Lighter border for dark mode */
         padding: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        background-color: #333333; /* Dark background for input field */
     }
     /* Style for the text output from the bot */
     p b {
-        color: #1a237e; /* Dark blue for "You said" and "Daksh says" labels */
+        color: #4CAF50; /* Green for "You said" and "Daksh says" labels */
+    }
+    /* Ensure text within input fields is white */
+    .st-emotion-cache-vdv0q { /* Target the actual input element for text color */
+        color: #f0f2f6 !important;
     }
 </style>
 """, unsafe_allow_html=True)
