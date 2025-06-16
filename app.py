@@ -1,20 +1,22 @@
 import streamlit as st
 import io
 from groq import Groq
-from gtts import gTTS
+from gtts import gTTS # Re-import gTTS
 from streamlit_mic_recorder import mic_recorder
 import base64
 import os
 
 # --- Configuration ---
-# GROQ_API_KEY is accessed from Streamlit Secrets, NOT hardcoded here.
 GROQ_API_KEY = st.secrets["GROQ_API_KEY"] 
+# OPENAI_API_KEY is no longer needed if using gTTS, but leaving for clarity if you switch back
+# OPENAI_API_KEY = st.secrets["GROQ_API_KEY"] # This line can be removed or commented out
+
 GROQ_TEXT_MODEL = "llama-3.3-70b-versatile" # Model for text generation
 GROQ_STT_MODEL = "whisper-large-v3" # Model for speech-to-text (Whisper)
+# OPENAI_TTS_MODEL = "tts-1" # This is for OpenAI TTS, no longer needed
 
 # Placeholder for your actual photo URL. IMPORTANT: Replace this!
-# Using a placeholder image that aligns with the color scheme.
-DAKSH_PHOTO_URL = "https://placehold.co/150x150/ffffff/1a237e?text=Daksh" # Placeholder with white background, dark blue text
+DAKSH_PHOTO_URL = "https://placehold.co/150x150/ffffff/1a237e?text=Daksh" 
 
 # --- Functions for AI Interactions ---
 
@@ -97,7 +99,7 @@ def generate_ai_response(user_text: str, persona_data: str, groq_client: Groq) -
         st.error(f"Error generating AI response: {e}")
         return "I apologize, but I encountered an issue while generating my response."
 
-def text_to_speech(text: str) -> bytes:
+def text_to_speech(text: str) -> bytes: # Removed openai_client argument
     """
     Converts text into speech audio bytes using gTTS.
     Args:
@@ -219,6 +221,14 @@ except Exception as e:
     st.error(f"Failed to initialize Groq client. Please check your GROQ_API_KEY in Streamlit Secrets. Error: {e}")
     st.stop() # Stop the app if API key is not set
 
+# Initialize OpenAI client is no longer needed
+# try:
+#     openai_client = OpenAI(api_key=OPENAI_API_KEY) 
+# except Exception as e:
+#     st.error(f"Failed to initialize OpenAI client. Please check your OPENAI_API_KEY (or GROQ_API_KEY if using same) in Streamlit Secrets. Error: {e}")
+#     st.stop() # Stop the app if API key is not set
+
+
 # Load persona data
 persona_data = load_persona_data()
 if persona_data is None:
@@ -256,7 +266,8 @@ if audio_data_dict: # mic_recorder returns a dict or None
         ai_response = generate_ai_response(user_text, persona_data, groq_client)
         if ai_response:
             st.markdown(f"<p><b>Daksh says:</b> {ai_response}</p>", unsafe_allow_html=True)
-            audio_output = text_to_speech(ai_response)
+            # Pass the openai_client to the text_to_speech function
+            audio_output = text_to_speech(ai_response) # No openai_client argument needed now
             if audio_output:
                 st.audio(audio_output, format='audio/mp3', start_time=0)
     else:
