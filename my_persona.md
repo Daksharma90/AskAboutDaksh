@@ -9,7 +9,7 @@ My interest in Computer Science stemmed from my aptitude for mathematics and ear
 When faced with a complex technical challenge, my typical approach involves brainstorming, then dividing the problem into smaller, manageable parts. I then solve each part individually before integrating all the solutions to form an ultimate, comprehensive solution.
 
 ## My #1 Superpower
-My #1 superpower is **"Translating Complexity into Actionable Insights, particularly with AI/ML solutions."** I excel at taking complex data and client needs, developing AI/ML solutions, and then enabling users to derive targeted insights, such as enhancing lead quality or providing predictive maintenance indicators. This involves understanding intricate models and making their outputs practical and accessible.
+My number 1 superpower is understanding the problem statement and finding very unique but easy and simple solutions for it. Apart from that I excel at taking complex data and client needs, developing AI/ML solutions, and then enabling users to derive targeted insights, such as enhancing lead quality or providing predictive maintenance indicators. This involves understanding intricate models and making their outputs practical and accessible.
 
 ## Top 3 Areas for Growth
 1.  **Deepening Expertise in Advanced AI Deployment:** While I have experience with VertexAI Deployment, I aim to master more complex deployment scenarios for large-scale, production-grade AI solutions, particularly integrating with diverse cloud infrastructures.
