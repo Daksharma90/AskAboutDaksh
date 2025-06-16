@@ -244,6 +244,7 @@ audio_data_dict = mic_recorder(
 
 user_text = ""
 ai_response = ""
+audio_output = None # Initialize audio_output to None
 
 # Check if audio_data_dict is not None and contains 'bytes'
 if audio_data_dict: 
@@ -255,10 +256,11 @@ if audio_data_dict:
         ai_response = generate_ai_response(user_text, persona_data, groq_client)
         if ai_response:
             st.markdown(f"<p><b>Daksh says:</b> {ai_response}</p>", unsafe_allow_html=True)
-            # Autoplay the audio once
-            st.audio(audio_output, format='audio/mp3', start_time=0, autoplay=True) 
+            audio_output = text_to_speech(ai_response) # Assign audio_output here
+            
+            # Now, check if audio_output is not None before playing
             if audio_output:
-                st.audio(audio_output, format='audio/mp3', start_time=0, autoplay=True)
+                st.audio(audio_output, format='audio/mp3', start_time=0, autoplay=True) 
     else:
         st.warning("Could not transcribe your audio. Please try again.")
 
