@@ -28,9 +28,9 @@ I consistently push my boundaries by actively engaging in ongoing projects and c
 * **Role:** AI/ML Engineer
 * **Objective:** Develop AI/ML solutions for clients in media, advertising, and manufacturing.
 * **Key Achievements:**
-    * Developed an AI-based lead analysis system for a media and advertising company to enhance lead quality and campaign effectiveness, enabling users to retrieve targeted leads through natural language queries.
-    * Built a machine asset monitoring solution for a manufacturing client using LLM models to analyze data from uniquely assigned email IDs for each asset, providing actionable insights and predictive maintenance indicators.
-    * Actively leading and involved in ongoing projects, contributing to model development, data preprocessing, and deployment.
+    * Developed an AI-based lead analysis system for a media and advertising company to enhance lead quality and campaign effectiveness, enabling users to retrieve targeted leads through natural language queries. Used duckdb to handle csv sand xlsx files and deepseek to convert the user natural query into an SQL query and then this query is runned over the csv file by the duckdb.
+    * Built a machine asset monitoring solution for a manufacturing client using LLM models to analyze data from uniquely assigned email IDs for each asset, providing actionable insights and predictive maintenance indicators.  We use batch summarization to find the actionable insights and key issues.
+    * Actively leading and involved in ongoing projects, contributing to model development, data preprocessing, and deployment. Also I am building an AI_Interviewer which will be available soon for students.
 
 ### Software Project Intern at Bhiwani Algorithm R&D Pvt Ltd. (Oct 2023 - Feb 2024)
 * **Role:** Software Project Intern
