@@ -7,12 +7,14 @@ import base64
 import os
 
 # --- Configuration ---
-GROQ_API_KEY = st.secrets["GROQ_API_KEY"] # Access API key securely from Streamlit Secrets
+# GROQ_API_KEY is accessed from Streamlit Secrets, NOT hardcoded here.
+GROQ_API_KEY = st.secrets["GROQ_API_KEY"] 
 GROQ_TEXT_MODEL = "llama-3.3-70b-versatile" # Model for text generation
 GROQ_STT_MODEL = "whisper-large-v3" # Model for speech-to-text (Whisper)
 
 # Placeholder for your actual photo URL. IMPORTANT: Replace this!
-DAKSH_PHOTO_URL = "https://placehold.co/150x150/CCE5FF/000000?text=Daksh" 
+# Using a placeholder image that aligns with the color scheme.
+DAKSH_PHOTO_URL = "https://placehold.co/150x150/1a237e/ffffff?text=Daksh" 
 
 # --- Functions for AI Interactions ---
 
@@ -36,15 +38,15 @@ def transcribe_audio(audio_bytes: bytes, groq_client: Groq) -> str:
         str: Transcribed text.
     """
     try:
-        st.spinner("Transcribing audio...")
-        with io.BytesIO(audio_bytes) as audio_file:
-            audio_file.name = "audio.wav" # Groq API expects a file-like object with a name
-            transcript = groq_client.audio.transcriptions.create(
-                file=(audio_file.name, audio_file.getvalue(), "audio/wav"),
-                model=GROQ_STT_MODEL,
-                response_format="text"
-            )
-            return transcript.strip()
+        with st.spinner("Transcribing audio..."): # Spinner moved inside for better UX
+            with io.BytesIO(audio_bytes) as audio_file:
+                audio_file.name = "audio.wav" # Groq API expects a file-like object with a name
+                transcript = groq_client.audio.transcriptions.create(
+                    file=(audio_file.name, audio_file.getvalue(), "audio/wav"),
+                    model=GROQ_STT_MODEL,
+                    response_format="text"
+                )
+                return transcript.strip()
     except Exception as e:
         st.error(f"Error transcribing audio: {e}")
         return ""
@@ -115,7 +117,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for a beautiful UI
+# Custom CSS for a beautiful UI - REVISED COLORS AND STYLES
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -132,55 +134,68 @@ st.markdown("""
         padding-bottom: 1rem;
     }
     .st-emotion-cache-1r6y4y9 { /* Header styling */
-        color: #1a237e; /* Dark blue */
+        color: #1a237e; /* Dark blue, matching image border */
         font-weight: 700;
         text-align: center;
         margin-bottom: 2rem;
     }
-    .st-emotion-cache-16txt4s { /* Markdown text */
+    .st-emotion-cache-16txt4s { /* Markdown text - Tagline */
         text-align: center;
         color: #555555;
     }
-    .stButton>button {
-        background-color: #4CAF50; /* Green */
+    /* Specific styling for the mic recorder button */
+    div.st-emotion-cache-1j43z82 > div > button,
+    div.st-emotion-cache-z5in9u > button, /* Target mic recorder button */
+    .stButton > button { /* General button style */
+        background-color: #1a237e; /* Dark blue primary color */
         color: white;
-        border-radius: 12px; /* More rounded corners */
+        border-radius: 12px;
         padding: 10px 20px;
         font-size: 16px;
         font-weight: 600;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
         border: none;
+        width: 100%; /* Make buttons full width for consistency */
+        margin-top: 10px; /* Add some space above buttons */
     }
-    .stButton>button:hover {
-        background-color: #45a049; /* Darker green on hover */
-        transform: translateY(-2px); /* Slight lift effect */
+    div.st-emotion-cache-1j43z82 > div > button:hover,
+    div.st-emotion-cache-z5in9u > button:hover,
+    .stButton > button:hover {
+        background-color: #2c387e; /* Slightly lighter blue on hover */
+        transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
     .stAudio {
         border-radius: 12px;
-        background-color: #e0e0e0; /* Light gray for audio player */
+        background-color: #e0e0e0;
         padding: 10px;
+        margin-top: 10px; /* Space after response text */
     }
     .stImage {
         border-radius: 50%; /* Circular image */
-        border: 4px solid #1a237e; /* Border around image */
+        border: 4px solid #1a237e; /* Dark blue border around image */
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     .stSpinner > div > div { /* Spinner color */
         color: #1a237e;
     }
-    div.st-emotion-cache-1r4qj8m { /* text input */
+    div.st-emotion-cache-1r4qj8m { /* text input outer div */
         border-radius: 12px;
         border: 1px solid #cccccc;
         padding: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-top: 10px;
     }
     div.st-emotion-cache-nahz7x { /* Text Area */
         border-radius: 12px;
         border: 1px solid #cccccc;
         padding: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    /* Style for the text output from the bot */
+    p b {
+        color: #1a237e; /* Dark blue for "You said" and "Daksh says" labels */
     }
 </style>
 """, unsafe_allow_html=True)
@@ -201,7 +216,8 @@ st.markdown("<h1 class='st-emotion-cache-1r6y4y9'>👋 Meet Daksh's AI Persona!<
 
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.image(DAKSH_PHOTO_URL, width=150, use_column_width=False)
+    # Changed to use a placeholder image URL that fits the color scheme
+    st.image(DAKSH_PHOTO_URL, width=150, use_column_width=False) 
 st.markdown("<p class='st-emotion-cache-16txt4s'>Ask me anything about Daksh's life, career, or aspirations. I'll respond as he would!</p>", unsafe_allow_html=True)
 st.markdown("---")
 
@@ -219,18 +235,15 @@ user_text = ""
 ai_response = ""
 
 if audio_bytes:
-    with st.spinner("Transcribing your voice..."):
-        user_text = transcribe_audio(audio_bytes, groq_client)
+    user_text = transcribe_audio(audio_bytes, groq_client)
     if user_text:
         st.markdown(f"<p><b>You said:</b> {user_text}</p>", unsafe_allow_html=True)
         st.session_state['last_user_text'] = user_text # Store for potential manual trigger
 
-        with st.spinner("Generating Daksh's response..."):
-            ai_response = generate_ai_response(user_text, persona_data, groq_client)
+        ai_response = generate_ai_response(user_text, persona_data, groq_client)
         if ai_response:
             st.markdown(f"<p><b>Daksh says:</b> {ai_response}</p>", unsafe_allow_html=True)
-            with st.spinner("Converting response to speech..."):
-                audio_output = text_to_speech(ai_response)
+            audio_output = text_to_speech(ai_response)
             if audio_output:
                 st.audio(audio_output, format='audio/mp3', start_time=0)
     else:
@@ -243,8 +256,7 @@ manual_input = st.text_input("Type your question here:", key="manual_text_input"
 
 if st.button("Get Response (Text Only)"):
     if manual_input:
-        with st.spinner("Generating Daksh's response..."):
-            ai_response = generate_ai_response(manual_input, persona_data, groq_client)
+        ai_response = generate_ai_response(manual_input, persona_data, groq_client)
         if ai_response:
             st.markdown(f"<p><b>Daksh says:</b> {ai_response}</p>", unsafe_allow_html=True)
     else:
