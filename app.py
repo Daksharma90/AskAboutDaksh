@@ -28,18 +28,24 @@ def load_persona_data(filepath="my_persona.md"):
         st.error(f"Error: '{filepath}' not found. Please ensure your persona file is in the same directory.")
         return None
 
-def transcribe_audio(audio_bytes: bytes, groq_client: Groq) -> str:
+def transcribe_audio(audio_bytes_dict: dict, groq_client: Groq) -> str:
     """
     Transcribes audio bytes into text using Groq's Whisper API.
     Args:
-        audio_bytes (bytes): Raw audio data in WAV format.
+        audio_bytes_dict (dict): Dictionary returned by mic_recorder containing audio data.
         groq_client (Groq): Initialized Groq client.
     Returns:
         str: Transcribed text.
     """
+    if audio_bytes_dict is None or 'bytes' not in audio_bytes_dict:
+        st.error("No valid audio data received from microphone.")
+        return ""
+
+    raw_audio_bytes = audio_bytes_dict['bytes'] # Extract raw bytes from the dictionary
+
     try:
-        with st.spinner("Transcribing audio..."): # Spinner moved inside for better UX
-            with io.BytesIO(audio_bytes) as audio_file:
+        with st.spinner("Transcribing audio..."): 
+            with io.BytesIO(raw_audio_bytes) as audio_file:
                 audio_file.name = "audio.wav" # Groq API expects a file-like object with a name
                 transcript = groq_client.audio.transcriptions.create(
                     file=(audio_file.name, audio_file.getvalue(), "audio/wav"),
@@ -230,7 +236,7 @@ st.markdown("---")
 st.markdown("<h3>🎙️ Speak Your Question</h3>", unsafe_allow_html=True)
 
 # Microphone recorder
-audio_bytes = mic_recorder(
+audio_data_dict = mic_recorder( # Renamed variable to reflect it's a dict
     start_prompt="Click to Speak",
     stop_prompt="Stop Speaking",
     key='mic_recorder',
@@ -240,8 +246,9 @@ audio_bytes = mic_recorder(
 user_text = ""
 ai_response = ""
 
-if audio_bytes:
-    user_text = transcribe_audio(audio_bytes, groq_client)
+# Check if audio_data_dict is not None and contains 'bytes'
+if audio_data_dict: # mic_recorder returns a dict or None
+    user_text = transcribe_audio(audio_data_dict, groq_client) # Pass the dictionary
     if user_text:
         st.markdown(f"<p><b>You said:</b> {user_text}</p>", unsafe_allow_html=True)
         st.session_state['last_user_text'] = user_text # Store for potential manual trigger
